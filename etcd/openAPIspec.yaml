@@ -1,0 +1,499 @@
+openapi: 3.0.0
+info:
+  title: Go Test Service
+  description: The Go Test Service API is a Go microservice to test the functionality of Nebula.
+  version: 0.1.10
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: developers
+    description: Operations available to regular developers
+paths:
+  /go-test-service/imsi/{subscriberIMSI}:
+    get:
+      tags:
+        - admins
+      summary: Test retrieval of TPS limits (3-AM-SetPreFlightFlags) from a path.
+      description: This method is used to retrieve the rate limits from the URL path and return back to the API Consumer
+      operationId: getSubscriberIMSI
+      parameters:
+        - in: path
+          name: subscriberIMSI
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Test retrieval of TPS limits (3-AM-SetPreFlightFlags) from a path.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            Strict-Transport-Security:
+              $ref: '#/components/headers/Strict-Transport-Security'
+            Date:
+              $ref: '#/components/headers/Date'
+            X-Content-Type-Options:
+              $ref: '#/components/headers/X-Content-Type-Options'
+            Content-Type:
+              $ref: '#/components/headers/Content-Type'
+            vf-trace-transaction-id:
+              $ref: '#/components/headers/vf-trace-transaction-id'
+            limit:
+              $ref: '#/components/headers/limit'
+        "400":
+          $ref: '#/components/responses/400BadRequest'
+        "401":
+          $ref: '#/components/responses/401Unauthorized'
+        "403":
+          $ref: '#/components/responses/403Forbidden'
+        "404":
+          $ref: '#/components/responses/404NotFound'
+        "405":
+          $ref: '#/components/responses/405MethodNotAllowed'
+        "406":
+          $ref: '#/components/responses/406Unacceptable'
+        "415":
+          $ref: '#/components/responses/415Unsupported'
+        "429":
+          $ref: '#/components/responses/429TooManyRequests'
+        "500":
+          $ref: '#/components/responses/500InternalServerError'
+        "502":
+          $ref: '#/components/responses/502BadGateway'
+        "503":
+          $ref: '#/components/responses/503ServiceUnavailable'
+        "504":
+          $ref: '#/components/responses/504GatewayTimeout'
+  /go-test-service/msisdn/{subscriberMSISDN}:
+    get:
+      tags:
+        - admins
+      summary: Test MSISDN retreival functions in Nebula using a subscriber's MSISDN
+      description: This method is used to return MSISDN from the subscriber
+      operationId: getSubscriberMSISDN
+      parameters:
+        - in: path
+          name: subscriberMSISDN
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: |
+            Use subscriberMSISDN to test:
+            - MSISDN retrieval (3-EV-GetMSISDN),
+            - Country Code extraction (0-SF-CountryCodeExtractor),
+            - Security Whitelisting (0-SF-SecurityFilter-CountryWhitelisting) using Country Code
+            - Quota Management (0-SF-QuotaManagement) using Country Code
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            Strict-Transport-Security:
+              $ref: '#/components/headers/Strict-Transport-Security'
+            Date:
+              $ref: '#/components/headers/Date'
+            X-Content-Type-Options:
+              $ref: '#/components/headers/X-Content-Type-Options'
+            Content-Type:
+              $ref: '#/components/headers/Content-Type'
+            vf-trace-transaction-id:
+              $ref: '#/components/headers/vf-trace-transaction-id'
+            # Add limit header to set TPS limits if not specified in path
+            limit:
+              $ref: '#/components/headers/limit'
+        "400":
+          $ref: '#/components/responses/400BadRequest'
+        "401":
+          $ref: '#/components/responses/401Unauthorized'
+        "403":
+          $ref: '#/components/responses/403Forbidden'
+        "404":
+          $ref: '#/components/responses/404NotFound'
+        "405":
+          $ref: '#/components/responses/405MethodNotAllowed'
+        "406":
+          $ref: '#/components/responses/406Unacceptable'
+        "415":
+          $ref: '#/components/responses/415Unsupported'
+        "429":
+          $ref: '#/components/responses/429TooManyRequests'
+        "500":
+          $ref: '#/components/responses/500InternalServerError'
+        "502":
+          $ref: '#/components/responses/502BadGateway'
+        "503":
+          $ref: '#/components/responses/503ServiceUnavailable'
+        "504":
+          $ref: '#/components/responses/504GatewayTimeout'
+
+components:
+  schemas:
+    errorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Link to API in developers portal giving mode information w.r.t. error
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type.
+        status:
+          type: integer
+          description:
+            The HTTP status code.
+        detail:
+          type: string
+          description: 'This parameter appears when there was an error. It may be composed by one or two elements: error.code and error.message'
+
+  responses:
+
+    400BadRequest:
+      description: Bad input parameter
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Bad Request
+            status: 400
+            detail: Invalid MSISDN received
+
+    401Unauthorized:
+      description: Unauthorized
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Invalid token
+            status: 401
+            detail: The access token has been revoked
+
+    403Forbidden:
+      description: Forbidden
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Invalid request
+            status: 403
+            detail: Service is not whitelisted for this country
+
+    404NotFound:
+      description: Rule not found
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Rule not found
+            status: 404
+            detail: Rule not found
+
+    405MethodNotAllowed:
+      description: Method not allowed
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Method not allowed
+            status: 405
+            detail: The request method is not supported
+
+    406Unacceptable:
+      description: "Unacceptable"
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Invalid request
+            status: 406
+            detail: Not supported representation
+
+    409Conflict:
+      description: A rule already exists for the specified subscriber
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Conflict
+            status: 409
+            detail: Already existing rule for subscriber
+
+    415Unsupported:
+      description: "Unsupported Media Type"
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Invalid request
+            status: 415
+            detail: Unexpected or missing content types
+
+    429TooManyRequests:
+      description: Too Many requests
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: Too Many Requests
+            status: 429
+            detail: Spike Arrest Violation
+
+    500InternalServerError:
+      description: Internal Server Error
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: PCRF failure
+            status: 500
+            detail: PCRF Error
+
+    502BadGateway:
+      description: Bad Gateway
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: server_error
+            status: 502
+            detail: Error connecting to an upstream server
+
+    503ServiceUnavailable:
+      description: Service Unavailable
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: server_error
+            status: 503
+            detail: An upstream server is unavailable
+
+    504GatewayTimeout:
+      description: Gateway Time-out
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        Strict-Transport-Security:
+          $ref: '#/components/headers/Strict-Transport-Security'
+        Date:
+          $ref: '#/components/headers/Date'
+        X-Content-Type-Options:
+          $ref: '#/components/headers/X-Content-Type-Options'
+        Content-Type:
+          $ref: '#/components/headers/Content-Type'
+        vf-trace-transaction-id:
+          $ref: '#/components/headers/vf-trace-transaction-id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            title: server_error
+            status: 504
+            detail: A timeout occurred connecting to an upstream server
+
+  headers:
+    Cache-Control:
+      schema:
+        type: string
+        default: "no-cache"
+      description: Used to specify browser caching policies in both client requests and server responses
+    Strict-Transport-Security:
+      schema:
+        type: string
+        default: "max-age=31536000 ; includeSubDomains"
+      description: Web security policy mechanism which helps to protect websites against protocol downgrade attacks and cookie hijacking
+    Date:
+      schema:
+        type: string
+        format: date-time
+      description: Time the server constructed the response.
+      example: e.g. YYY-MM-DDThh:mm:ssZ
+    X-Content-Type-Options:
+      schema:
+        type: string
+        default: "nosniff"
+      description: Prevent the browser from interpreting files as a different MIME type to what is specified in the Content-Type HTTP header
+    Content-Type:
+      schema:
+        type: string
+        default: application/json
+      description: The Content-Type entity header is used to indicate the media type of the resource.
+    vf-trace-transaction-id:
+      schema:
+        type: string
+        format: uuid
+      description: The Correlation ID that will be used to allow correlation between response and corresponding request
+    limit:
+      schema:
+        type: string
+        format: uuid
+        default: "50"
+        description: The TPS value that will be used by Nebula to rate limit requests

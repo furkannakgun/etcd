@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etcd0
+  namespace: naap-development
+  labels:
+    app: etcd
+    etcd_node: etcd0
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"labels":{"app":"etcd","etcd_node":"etcd0"},"name":"etcd0","namespace":"naap-development"},"spec":{"containers":[{"args":["--data-dir=/etcd-data","--name=etcd0","--advertise-client-urls=http://etcd0:2379","--listen-client-urls=http://0.0.0.0:2379","--initial-cluster=etcd0=http://etcd0:2380","--initial-cluster-token=nebula-etcd-cluster-1","--initial-cluster-state=new","--listen-peer-urls=http://0.0.0.0:2380"],"command":["/usr/local/bin/etcd"],"image":"quay.io/coreos/etcd:v3.4.15","name":"etcd0","ports":[{"containerPort":2379,"name":"client","protocol":"TCP"},{"containerPort":2380,"name":"server","protocol":"TCP"}],"resources":{"limits":{"cpu":"200m","memory":"500Mi"},"requests":{"cpu":"200m","memory":"500Mi"}},"volumeMounts":[{"mountPath":"/etcd-data","name":"etcd-data"}]}],"restartPolicy":"Always","volumes":[{"name":"etcd-data","persistentVolumeClaim":{"claimName":"etcd-pvc"}}]}}
+    kubernetes.io/psp: naap-restricted-psp
+    seccomp.security.alpha.kubernetes.io/pod: runtime/default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      containers:
+      - args:
+        - --data-dir=/etcd-data
+        - --name=etcd0
+        - --advertise-client-urls=http://etcd0:2379
+        - --listen-client-urls=http://0.0.0.0:2379
+        - --initial-cluster=etcd0=http://etcd0:2380
+        - --initial-cluster-token=nebula-etcd-cluster-1
+        - --initial-cluster-state=new
+        - --listen-peer-urls=http://0.0.0.0:2380
+        command:
+        - /usr/local/bin/etcd
+        image: quay.io/coreos/etcd:v3.4.15
+        imagePullPolicy: IfNotPresent
+        name: etcd0
+        ports:
+        - containerPort: 2379
+          name: client
+          protocol: TCP
+        - containerPort: 2380
+          name: server
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 500Mi
+          requests:
+            cpu: 200m
+            memory: 500Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsUser: 1
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etcd-data
+          name: etcd-data
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: true
+      preemptionPolicy: PreemptLowerPriority
+      priority: 2000000
+      priorityClassName: caas.io-app
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups:
+        - 1
+      serviceAccount: default
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 300
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 300
+      volumes:
+      - name: etcd-data
+        persistentVolumeClaim:
+          claimName: etcd-pvc

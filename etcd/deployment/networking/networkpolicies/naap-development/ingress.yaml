@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: naap-development
+  name: etcd-nebula-ingress
+  annotations:
+    microservice.name: etcd-nebula
+spec:
+  policyTypes:
+  - Ingress
+  podSelector:
+    matchLabels:
+      app: etcd-nebula
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: nebula
+    ports:
+    - port: 2379
+      protocol: TCP

@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-nebula-client
+spec:
+  ports:
+  - name: etcd-nebula-client-port
+    port: 2379
+    protocol: TCP
+    targetPort: 2379
+  selector:
+    app: etcd-nebula
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: etcd-nebula
+    etcd_node: etcd0-nebula
+  name: etcd0-nebula
+spec:
+  volumes:
+  - name: etcd-nebula-data
+    persistentVolumeClaim:
+      claimName: etcd-nebula-pvc
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  containers:
+  - args:
+    - --data-dir=/etcd-data
+    - --name=etcd0-nebula
+    - --advertise-client-urls=http://etcd0-nebula:2379
+    - --listen-client-urls=http://0.0.0.0:2379
+    - --initial-cluster=etcd0-nebula=http://etcd0-nebula:2380
+    - --initial-cluster-token=nebula-etcd-cluster-1
+    - --initial-cluster-state=new
+    - --listen-peer-urls=http://0.0.0.0:2380
+    command:
+    - /usr/local/bin/etcd
+    image: quay.io/coreos/etcd:v3.4.15
+    name: etcd0-nebula
+    ports:
+    - containerPort: 2379
+      name: client
+      protocol: TCP
+    - containerPort: 2380
+      name: server
+      protocol: TCP
+    resources:
+      limits:
+        cpu: 200m
+        memory: 500Mi
+      requests:
+        cpu: 200m
+        memory: 500Mi
+    volumeMounts:
+    - mountPath: /etcd-data
+      name: etcd-nebula-data
+  restartPolicy: Always
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    etcd_node: etcd0-nebula
+  name: etcd0-nebula
+spec:
+  ports:
+  - name: client
+    port: 2379
+    protocol: TCP
+    targetPort: 2379
+  - name: server
+    port: 2380
+    protocol: TCP
+    targetPort: 2380
+  selector:
+    etcd_node: etcd0-nebula

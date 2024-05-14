@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: naap-internal-dev
+  name: etcd-ingress
+  labels:
+    contact.productowner: victor.fernandez_at_vodafone.com
+    contact.deployment: naapdevops_at_vodafone.com
+    contact.team: naapdev_at_vodafone.com
+    environment.type: DEV
+    environment.up: '09'
+    environment.down: '15'
+    microservice.localmarket: GROUP
+  annotations:
+    contact.support: '+447748106038'
+    microservice.name: etcd
+    microservice.repository: https://github.vodafone.com/VFGroup-NetworkArchitecture-NAAP/etcd.git
+spec:
+  policyTypes:
+  - Ingress
+  podSelector:
+    matchLabels:
+      app: etcd
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: nebula
+    ports:
+    - port: 2379
+      protocol: TCP
